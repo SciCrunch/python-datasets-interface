@@ -1,0 +1,8 @@
+setup.py
+scicrunch/__init__.py
+scicrunch/datasets.py
+scicrunch.egg-info/PKG-INFO
+scicrunch.egg-info/SOURCES.txt
+scicrunch.egg-info/dependency_links.txt
+scicrunch.egg-info/requires.txt
+scicrunch.egg-info/top_level.txt
