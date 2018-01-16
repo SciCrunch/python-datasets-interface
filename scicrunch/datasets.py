@@ -1,31 +1,48 @@
 import requests, json, string, urllib2
 
+"""
+Condense methods
+if look up lab id store in __lab_ids
+before look up check if lab_id in dictionary 
+if not specified use default(original) lab
+push to git
+
+
+"""
+
 
 class Interface:
     #def __init__(self, key=None, host=scicrunch.org, lab, community, user=None, pwrd=None)
     #if lab id !200 raise exception
-    def __init__(self, key, host = None, lab, community, user=None, pwrd=None):
+    def __init__(self, key, lab, community, host = None, user=None, pwrd=None):
         self.key = key
-        self.host = scicrunch.org
+        if host is None:
+            self.host = 'scicrunch.org'
+        else:
+            self.host = host
         self.lab = lab
         self.community = community
         self.user = user
         self.pwrd = pwrd
-        #self.key = cfg.interface['key']
-        #self.host = cfg.interface['host']
-        #self.lab = cfg.interface['lab']
-        #self.community = cfg.interface['community']
-        #self.user = cfg.interface['user']
-        #self.pwrd = cfg.interface['pwrd']
         url = "https://"
         l = '/'
         url = url + self.host +'.org'+ '/api/1/'
         self.url = url
+        url = self.url+ 'lab/id?labname=' + self.lab+'&portalname=' + self.community +'&key='+ self.key
+        lab_id = ''
+        try:
+            req = requests.get(url,auth=(user,pwrd))
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+        else:
+            lab_id = req.json()['data']
+        self.__lab_ids = {lab: lab_id}
 
     #/api/1/lab/id?labname=${name}&portalname=${portalname}
     #get lab id to access lab
-    def getLabID(self, lab, portal):
-        url = self.url+ 'lab/id?labname=' + self.lab+'&portalname=' + self.community +'&key='+self.key
+    def __getLabID(self, lab):
+        url = self.url+ 'lab/id?labname=' + lab+'&portalname=' + self.community +'&key='+ self.key
         print(url)
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
@@ -37,9 +54,33 @@ class Interface:
             return req.json()['data']
 
    
+    def __getDataset(self, labid, dataset):
+        url = self.url + 'datasets/id?labid=' + str(labid) + '&datasetname=' + dataset+'&key='+self.key
+        print(url)
+        try:
+            req = requests.get(url,auth=(self.user,self.pwrd))
+            print(req.status_code)
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+        else:
+            return req.json()['data']
     #/api/1/datasets/id?labid=${labid}&datasetname=${datasetname}
     # get dataset id to access data and information
-    def getDataset(self, labid, dataset):
+    def getDataset(self, dataset, lab=None):
+        if not lab:
+            lab = self.lab
+            labid = self.__lab_ids[lab]
+            if labid == '':
+                self.__lab_ids[lab] = self.__getLabID(lab)
+        there = False
+        for i in self.__lab_ids:
+            if i == lab:
+                labid = self.__lab_ids[lab]
+                there = True
+        if not there:
+            labid = __getLabID(lab, self.community)
+            self.__lab_id[lab] = labid
         url = self.url + 'datasets/id?labid=' + str(labid) + '&datasetname=' + dataset+'&key='+self.key
         print(url)
         try:
@@ -54,7 +95,7 @@ class Interface:
     #/api/1/datasets/info?datasetid=${datasetid}
     #if lab id !200 raise exception
     # get metadata for the data set
-    def getInfo(self, data_id):
+    def __getInfo(self, data_id):
         url = self.url + 'datasets/info?datasetid=' + str(data_id) + '&key=' +self.key
         print(url)
         try:
@@ -70,9 +111,27 @@ class Interface:
                 u =d.new_field(j['name'],j['termid']['label'])
             return d
 
+    def getInfo(self, dataset, lab=None):
+        data_id = self.getDataset(dataset, lab)
+        url = self.url + 'datasets/info?datasetid=' + str(data_id) + '&key=' +self.key
+        print(url)
+        try:
+            req = requests.get(url,auth=(self.user,self.pwrd))
+            print(req.status_code)
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+        else:
+            d = Dataset()
+            json = req.json()
+            for j in json['data']['template']['fields']:
+                u =d.new_field(j['name'],j['termid']['label'])
+            return d
+
+
     #/api/1/datasets/search?datasetid=${datasetid}
     # get actual data
-    def getData(self, data_id, d_set):
+    def __getdata(self, data_id):
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
         print(url)
         try:
@@ -84,14 +143,63 @@ class Interface:
         else:
             d = req.json()
             data = d['data']['records']
+            d_set = []
             for a in data:
-                d_set.add_data(a)
+                d_set.append(a)
+            return d_set
+    
+    def getdata(self, dataset, lab=None):
+        data_id = self.getDataset(dataset, lab)
+        url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
+        print(url)
+        try:
+            req = requests.get(url,auth=(self.user,self.pwrd))
+            print(req.status_code)
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+        else:
+            d = req.json()
+            data = d['data']['records']
+            d_set = []
+            for a in data:
+                d_set.append(a)
             return d_set
     
     #Create a data template
     # give a name for tem plate and labid to put template in and any required fields name
     #/api/1/datasets/template/add?name=labid=required_fields_name=
-    def createDatasetTemplate(self, name, labid, req_f_name):
+    def __createDatasetTemplate(self, name, labid, req_f_name):
+        url = self.url + 'datasets/template/add'
+        print(url)
+        headers = {'Content-type': 'application/json'}
+        d = {'name': name, 
+             'labid': labid,
+             'required_fields_name': req_f_name,
+             'key':self.key
+             }
+        try:
+            req = requests.post(url,data = json.dumps(d),headers = headers,auth=(self.user,self.pwrd))
+            print(req.status_code)
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+        else:
+            d1 = req.json()
+            data = d1['data']['id']
+            return data
+    def createDatasetTemplate(self, name, req_f_name, lab=None):
+        if not lab:
+            lab = self.lab
+            labid = self.__lab_ids[lab]
+        there = False
+        for i in self.__lab_ids:
+            if i == lab:
+                labid = self.__lab_ids[lab]
+                there = True
+        if not there:
+            labid = __getLabID(lab, self.community)
+            self.__lab_id[lab] = labid
         url = self.url + 'datasets/template/add'
         print(url)
         headers = {'Content-type': 'application/json'}
@@ -194,7 +302,22 @@ class Interface:
             if hasattr(e, 'code'):
                 print(e.code)
     #valid status input: pending, rejected, approved, approved-internal, not-submitted
-    def submitDataset(self, d_id, status):
+    def __submitDataset(self, d_id, status):
+        url = self.url + 'datasets/change-lab-status'
+        print(url)
+        headers = {'Content-type': 'application/json'}
+        d = {'datasetid': d_id,
+            'status':status,
+            'key':self.key
+            }
+        try:
+            req = requests.post(url, data=json.dumps(d), headers=headers, auth=(self.user,self.pwrd))
+            print(req.status_code)
+        except IOError, e:
+            if hasattr(e, 'code'):
+                print(e.code)
+    def submitDataset(self, dataset, status, lab=None):
+        d_id = getDataset(dataset, lab) 
         url = self.url + 'datasets/change-lab-status'
         print(url)
         headers = {'Content-type': 'application/json'}
