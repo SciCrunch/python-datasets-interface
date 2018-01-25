@@ -5,9 +5,10 @@ class Interface:
     Interface for connecting to scicrunch server
     Uses api key, lab name, community name
 
-    import datasets.Interface
-    interface = datasets.Interface('apikey', 'Lab01', 'Community')
+    >>> import datasets.Interface
+    >>> interface = datasets.Interface('apikey', 'Lab01', 'Community')
     """
+    # initialize the default lab, community that will be used in other methods
     def __init__(self, key, lab, community, host = None, user=None, pwrd=None):
         self.key = key
         if host is None:
@@ -33,7 +34,8 @@ class Interface:
             lab_id = req.json()['data']
         self.__lab_ids = {lab: lab_id}
 
-    #get lab id to access lab
+    # get lab id to access lab
+    # basic method to get lab id used only by other methods
     def __getLabID(self, lab):
         url = self.url+ 'lab/id?labname=' + lab+'&portalname=' + self.community +'&key='+ self.key
         print(url)
@@ -49,6 +51,7 @@ class Interface:
             return lab_id
                
     # doesnt pass in Dataset object
+    # requires lab id unlike public method
     def __getDataset(self, labid, dataset):
         url = self.url + 'datasets/id?labid=' + str(labid) + '&datasetname=' + dataset+'&key='+self.key
         print(url)
@@ -61,12 +64,14 @@ class Interface:
         else:
             return req.json()['data']
 
+    # doesnt require lab id, uses one already specified, 
+    # can specify lab name and will get lab id 
     def getDataset(self, d_name, lab=None):
         """
         Arguments: name of a dataset and lab(optional)
         Returns a Dataset object
 
-        dataset = interface.getDataset('Mouse_dataset')
+        >>> dataset = interface.getDataset('Mouse_dataset')
         """
         if not lab:
             lab = self.lab
@@ -109,6 +114,7 @@ class Interface:
     #/api/1/datasets/info?datasetid=${datasetid}
     #if lab id !200 raise exception
     # get metadata for the data set
+    # mostly only used in getDataset to retireve information
     def __getInfo(self, data_id):
         url = self.url + 'datasets/info?datasetid=' + str(data_id) + '&key=' +self.key
         print(url)
@@ -130,12 +136,14 @@ class Interface:
             for j in json['template']['fields']:
                 d[j['name']] = j['termid']['label']
             return d
+
+    # getDatset will give same information
     def getInfo(self, dataset, lab=None):
         """
         Argument: dataset name
         Returns a dataset Object with all information
 
-        interface.getInfo('Mouse_1')
+        >>> interface.getInfo('Mouse_1')
         """
         if not lab:
             lab = self.lab
@@ -192,13 +200,16 @@ class Interface:
                 d_set.append(a)
             return d_set
     
+    # retrieves data information for specified dataset
+    # can use a field name to query for
+    # if no lab name specified default used
     def getdata(self, dataset, query=None, lab=None):
         """
         Arguments: dataset name, query(optional), lab name(optional)
         Returns list of data
         Query field: Returns only list of data from field indicated 
 
-        data = interface.getdata('Mouse_Dataset', 'AnimalID')
+        >>> data = interface.getdata('Mouse_Dataset', 'AnimalID')
         """
         data_id = self.__getDataset(self.__getLabID(self.lab), dataset)        
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
@@ -243,12 +254,15 @@ class Interface:
             data = d1['data']['id']
             return data
 
+    # only makes a template with name; need to add fields
     def createDatasetTemplate(self, name, req_f_name, lab=None):
         """
         Arguments: name of the template, fields requrired for entries
         Returns: new dataset template id
 
-        interface.createDatasetTemplate('template', 'AnimalID')
+        Only makes a template with a name and id, must still add desired feilds
+
+        >>> interface.createDatasetTemplate('template', 'AnimalID')
         """
         if not lab:
             lab = self.lab
@@ -286,7 +300,9 @@ class Interface:
         Arguments: template id, name of field to add, ilxid of field to add, req and query are '1' or '0'
         req is whether or not the field is required; query is whether or not the field is queryable
 
-        interface.createDatasetField('1234', 'Study', 'tmp_0138983', '0', '1')
+        Adds a data field to previously created template
+
+        >>> interface.createDatasetField('1234', 'Study', 'tmp_0138983', '0', '1')
         """
         url = self.url + 'datasets/fields/add'
         print(url)
@@ -311,7 +327,9 @@ class Interface:
         Arguments: template id, dataset field name, annotation name
         To mark field as subject of template annotation name = 'subject'
 
-        interface.markDatasetField('1234', 'AnimalID', 'subject')
+        A template must have a data field marked subject in order for it to be submitted
+
+        >>> interface.markDatasetField('1234', 'AnimalID', 'subject')
         """
         url = self.url + 'datasets/field/annotation/add'
         print(url)
@@ -333,7 +351,9 @@ class Interface:
         """
         Arguments: template id to submit
 
-        interface.submitDatasetTemplate('1234')
+        Template must contain a data field marked as subject before being submitted        
+
+        >>> interface.submitDatasetTemplate('1234')
         """
         url = self.url +'datasets/template/submit'
         print(url)
@@ -354,7 +374,9 @@ class Interface:
         Arguments: name, long name, description, publications, and id of template to be used
         Returns a Dataset object containing all information of new dataset
 
-        interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
+        Data must still be added to the dataset after creation
+
+        >>> interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
         """
         url = self.url + 'datasets/add'
         print(url)
@@ -394,8 +416,10 @@ class Interface:
         """
         Arguments: dataset id, fields of data to add to dataset
 
-        
-        interface.addDatasetRecord('12345','{'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'}' )
+        Add data to the previously created dataset 
+        Can get dataset id from dataset object that was made when addDataset was called
+
+        >>> interface.addDatasetRecord('12345','{'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'}' )
         """
         url =self.url +'datasets/records/add' 
         print(url)
@@ -432,7 +456,7 @@ class Interface:
         Arguments: dataset name to submit, status of the submit
         Valid status inputs are pending, rejected, approved, approved-internal, not-submitted
 
-        interface.submitDataset('Mouse_Dataset', 'approved')
+        >>> interface.submitDataset('Mouse_Dataset', 'approved')
         """
         d_id = getDataset(dataset, lab) 
         url = self.url + 'datasets/change-lab-status'
@@ -456,11 +480,15 @@ class Dataset:
     Uses the dataset id, dataset name, long name, associated publications, description
     template id, lab name, lab d, interface associated with it, and data fields
 
-    dataset = interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
+    Creates a dataset on the scicrunch server and returns the information 
+
+    >>> dataset = interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
 
     or
 
-    dataset = interface.getDataset('Mouse_dataset')
+    Returns dataset object for a previously created dataset on the scicrunch server
+
+    >>> dataset = interface.getDataset('Mouse_dataset')
     """
 
     def __init__(self, d_id, name, long_name, publications, description, template_id, lab, lab_id, interface, fields):
@@ -480,7 +508,7 @@ class Dataset:
         """
         Returns all field types associated with dataset
 
-        dataset.get_fields()
+        >>> dataset.get_fields()
         """
         return self.fields
 
@@ -489,7 +517,7 @@ class Dataset:
         """
         Adds a record to the dataset from given fields 
 
-        dataset.addDatasetRecord({'Gender': 'Female', 'AnimalID':'4', 'Scientist':'Joe'})
+        >>> dataset.addDatasetRecord({'Gender': 'Female', 'AnimalID':'4', 'Scientist':'Joe'})
         """
         return self.interface.addDatasetRecord(self.d_id, fields)['success']
 
@@ -499,7 +527,7 @@ class Dataset:
         Submits a dataset to a lab 
         Valid Status input: pending, rejected, approved, approved-internal, not-submitted
 
-        dataset.submitDataset('pending')
+        >>> dataset.submitDataset('pending')
         """
         test =  self.interface.submitDataset(self.d_id, status)['success']
         if test:
