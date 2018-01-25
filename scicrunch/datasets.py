@@ -406,7 +406,6 @@ class Interface:
         except IOError, e:
             if hasattr(e, 'code'):
                  print('Error: ', e.code)
-        print(req.json())
         return req.json()
     #valid status input: pending, rejected, approved, approved-internal, not-submitted
     def __submitDataset(self, d_id, status):
