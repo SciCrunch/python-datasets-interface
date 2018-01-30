@@ -18,7 +18,6 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     )
 
     dataset = interface.getDataset("dataset_name")
-    >>> scicrunch.datasets.Dataset instance
 
     dataset_fields = dataset.get_fields()
     fields = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
