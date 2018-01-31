@@ -18,15 +18,7 @@ Lab:
     
     from scicrunch.datasets import *
 
-    interface = datasets.Interface(
-        "api_key",
-        "lab_name",
-        "community_name"
-    )
-    
-    # If dataset template is not created 
-    template_id = interface.createDatasetTemplate("Mouse_Example", "Animal_ID")
-
+    # For reading in the example dataset file 'mouse1.txt'
     fields = []
     data = []
     with open("mose1.txt") as f:
@@ -46,6 +38,20 @@ Lab:
             line_num += 1
                     
 
+    # For creating the dataset
+
+    # First create an Interface
+    interface = datasets.Interface(
+        "api_key",
+        "lab_name",
+        "community_name"
+    )
+    
+    # If dataset template is not created 
+    # Create a new Template and get its ID
+    template_id = interface.createDatasetTemplate("Mouse_Example")
+
+    
     for field in fields:
         interface.createDatasetField(template_id, field, fields[field], 1, 1)
     interface.setAsSubjectField(template_id, "field_name", "subject")

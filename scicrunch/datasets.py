@@ -240,14 +240,14 @@ class Interface:
             return data
 
     # only makes a template with name; need to add fields
-    def createDatasetTemplate(self, name, req_f_name, lab=None):
+    def createDatasetTemplate(self, name,lab=None):
         """
-        Arguments: name of the template, fields requrired for entries
+        Arguments: name of the template
         Returns: new dataset template id
 
         Only makes a template with a name and id, must still add desired feilds
 
-        >>> interface.createDatasetTemplate('template', 'AnimalID')
+        >>> interface.createDatasetTemplate('template')
         """
         if not lab:
             lab = self.lab
@@ -264,7 +264,6 @@ class Interface:
         headers = {'Content-type': 'application/json'}
         d = {'name': name, 
              'labid': labid,
-             'required_fields_name': req_f_name,
              'key':self.key
              }
         try:
