@@ -1,3 +1,4 @@
+# Access lab and make a dataset
 If you have an API Key, Lab and community proceed to the next step.
 
 API Key:
@@ -13,7 +14,7 @@ Lab:
 1. Go to My Account -> Labs and datasets
 2. Either register a lab or use one of your labs
 
-# Import module and get data from example dataset 'mouse1.txt'
+## Import module and get data from example dataset 'mouse1.txt'
 ```python
     
     from scicrunch.datasets import *
@@ -37,7 +38,7 @@ Lab:
                 data.append(temp_data)
             line_num += 1
 ```                    
-# Make an Interface object to connect with the scicrunch server
+## Make an Interface object to connect with the scicrunch server
 Include your api key, the lab name and the community name
 ```
     interface = datasets.Interface(
@@ -46,7 +47,7 @@ Include your api key, the lab name and the community name
         "community_name"
     )
 ```  
-# Create a dataset template and get its ID 
+## Create a dataset template and get its ID 
 The only argument is the name of the dataset template.
 Then add the dataset fields to the template. Specify the template ID gotten when the template was created, and the fields specified in the mouse1.txt file.
 Set a field as the subject
@@ -59,7 +60,7 @@ After a field has been set as a subject the template can be submitted
     interface.setAsSubjectField(template_id, "field_name", "subject")
     interface.submitDatasetTemplate(template_id)
 ```
-# Create a dataset
+## Create a dataset
 Make the dataset with its name, long name, a description, publications and the ID of the template you would like to use
 Then add data to the dataset using the example data from the file 'mouse1.txt'.
 After the data has been added submit the dataset
