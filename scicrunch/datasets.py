@@ -276,7 +276,17 @@ class Interface:
             d1 = req.json()
             data = d1['data']['id']
             return data
-  
+
+      
+    def defaultILX(self):
+        """
+        Gives default ilxid for fields for current server
+        """
+        if self.host == 'test2.scicrunch.org':
+            return 'tmp_0115028'
+        raise ValueError('Unsupported host')
+
+
     #required & queryable can be either '1' or '0'
     def createDatasetField(self, temp_id, name, ilxid, req, query):
         """
