@@ -22,7 +22,7 @@ Lab:
     # For reading in the example dataset file 'mouse1.txt'
     fields = []
     data = []
-    with open("mose1.txt") as f:
+    with open("mouse1.txt") as f:
         line_num = 0
         keys = []
         for line in f:
