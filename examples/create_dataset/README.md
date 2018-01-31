@@ -27,22 +27,18 @@ Lab:
     # If dataset template is not created 
     template_id = interface.createDatasetTemplate("Mouse_Example", "Animal_ID")
 
-    fields = {}
+    fields = []
     data = []
     with open("mose1.txt") as f:
         line_num = 0
         keys = []
         for line in f:
             if line_num == 0:
-                field_info = line.strip.split("|")
+                field_info = line.strip.split(",")
                 for f in field_info:
-                    keys.append(f[0]
-                    f = f.split(",")
-                    key = f[0]
-                    val = f[1]
-                    fields[key] = val
+                    keys.append(f)
             else:
-                temp = line.split("|")
+                temp = line.split(",")
                 temp_data = {}
                 for t in range(len(temp)):
                     temp_data[keys[t]] = temp[t]
@@ -52,7 +48,7 @@ Lab:
 
     for field in fields:
         interface.createDatasetField(template_id, field, fields[field], 1, 1)
-    interface.markDatasetField(template_id, "field_name", "subject")
+    interface.setAsSubjectField(template_id, "field_name", "subject")
     interface.submitDatasetTemplate(template_id)
 
 

@@ -288,15 +288,17 @@ class Interface:
 
 
     #required & queryable can be either '1' or '0'
-    def createDatasetField(self, temp_id, name, ilxid, req, query):
+    def createDatasetField(self, temp_id, name, req, query):
         """
         Arguments: template id, name of field to add, ilxid of field to add, req and query are '1' or '0'
         req is whether or not the field is required; query is whether or not the field is queryable
 
         Adds a data field to previously created template
 
-        >>> interface.createDatasetField('1234', 'Study', 'tmp_0138983', '0', '1')
+        >>> interface.createDatasetField('1234', 'Study', '0', '1')
         """
+
+        ilxid = self.defaultILX()
         url = self.url + 'datasets/fields/add'
         d = {'template_id':temp_id,
             'name': name,

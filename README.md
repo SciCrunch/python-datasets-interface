@@ -30,7 +30,7 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     # dataset template methods
     template_id = interface.createDatasetTemplate("template_name", "field_name")
     interface.createDatasetField(template_id, "field_name", "ilxid", "if_required", "if_queryable")
-    interface.markDatasetField(template_id, "field_name", "subject")
+    interface.setAsSubjectField(template_id, "field_name", "subject")
     interface.submitDatasetTemplate(template_id)
     
     dataset2 = interface.addDataset("dataset_name", "long_dataset_name", "description", "publications", template_id)
