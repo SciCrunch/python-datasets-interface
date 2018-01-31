@@ -13,8 +13,8 @@ Lab:
 1. Go to My Account -> Labs and datasets
 2. Either register a lab or use one of your labs
 
-#Create Dataset
-'''python
+# Create Dataset
+```python
     
     from scicrunch.datasets import *
 
@@ -47,6 +47,7 @@ Lab:
                 for t in range(len(temp)):
                     temp_data[keys[t]] = temp[t]
                 data.append(temp_data)
+            line_num += 1
                     
 
     for field in fields:
@@ -62,4 +63,4 @@ Lab:
     interface.submitDataset(dataset, 'approved')  
     
 
-'''
+```
