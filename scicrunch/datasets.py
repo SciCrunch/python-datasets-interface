@@ -313,14 +313,14 @@ class Interface:
                 print('Error: ', e.code)
     #/datasets/field/annotation/add?tamplate_id=name=annotation_name=annotation_value=
     #annotation name = subject to mark field as subject
-    def markDatasetField(self, temp_id, name, ann_name):
+    def setAsSubjectField(self, temp_id, name):
+        ann_name = 'subject'
         """
         Arguments: template id, dataset field name, annotation name
-        To mark field as subject of template annotation name = 'subject'
 
         A template must have a data field marked subject in order for it to be submitted
 
-        >>> interface.markDatasetField('1234', 'AnimalID', 'subject')
+        >>> interface.setAsSubjectField('1234', 'AnimalID', 'subject')
         """
         url = self.url + 'datasets/field/annotation/add'
         d = {'template_id':temp_id,
