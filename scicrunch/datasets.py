@@ -1,4 +1,4 @@
-import requests, json, string, urllib2
+import requests, json, string, urllib
 
 class Interface:
     """
@@ -27,7 +27,7 @@ class Interface:
         lab_id = ''
         try:
             req = requests.get(url,auth=(user,pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -40,7 +40,7 @@ class Interface:
         url = self.url+ 'lab/id?labname=' + lab+'&portalname=' + self.community +'&key='+ self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -54,7 +54,7 @@ class Interface:
         url = self.url + 'datasets/id?labid=' + str(labid) + '&datasetname=' + dataset+'&key='+self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -85,7 +85,7 @@ class Interface:
         url = self.url + 'datasets/id?labid=' + str(labid) + '&datasetname=' + d_name +'&key='+self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -113,7 +113,7 @@ class Interface:
         url = self.url + 'datasets/info?datasetid=' + str(data_id) + '&key=' +self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -154,7 +154,7 @@ class Interface:
         url = self.url + 'datasets/info?datasetid=' + str(d_id) + '&key=' +self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -177,7 +177,7 @@ class Interface:
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -203,7 +203,7 @@ class Interface:
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -231,7 +231,7 @@ class Interface:
              }
         try:
             req = requests.post(url,data = json.dumps(d),headers = headers,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -268,7 +268,7 @@ class Interface:
              }
         try:
             req = requests.post(url,data = json.dumps(d),headers = headers,auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -309,7 +309,7 @@ class Interface:
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers,auth=(self.user, self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
     #/datasets/field/annotation/add?tamplate_id=name=annotation_name=annotation_value=
@@ -332,7 +332,7 @@ class Interface:
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers,auth=(self.user, self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error', e.code)
         return req.json()
@@ -351,7 +351,7 @@ class Interface:
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers,auth=(self.user, self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error :', e.code)
         return req.json()
@@ -376,7 +376,7 @@ class Interface:
         headers = {'Content-type': 'application/json'}
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers, auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
@@ -414,7 +414,7 @@ class Interface:
             }
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers, auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                  print('Error: ', e.code)
         return req.json()
@@ -428,7 +428,7 @@ class Interface:
             }
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers, auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         return req.json()
@@ -449,7 +449,7 @@ class Interface:
             }
         try:
             req = requests.post(url, data=json.dumps(d), headers=headers, auth=(self.user,self.pwrd))
-        except IOError, e:
+        except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         return req.json()
