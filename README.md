@@ -1,5 +1,7 @@
 # SciCrunch python datasets interface
+## Currently this library works with Python 2 - working on converting to Python 3
 
+[Example of how to create a dataset](https://github.com/SciCrunch/python-datasets-interface/tree/master/examples/create_dataset)
 ## install
 ```
 pip install git+git://github.com/SciCrunch/python-datasets-interface
@@ -29,7 +31,7 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
 
     # dataset template methods
     template_id = interface.createDatasetTemplate("template_name")
-    interface.createDatasetField(template_id, "field_name", "ilxid", "if_required", "if_queryable")
+    interface.createDatasetField(template_id, "field_name", "if_required", "if_queryable")
     interface.setAsSubjectField(template_id, "field_name", "subject")
     interface.submitDatasetTemplate(template_id)
     
