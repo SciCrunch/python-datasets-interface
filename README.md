@@ -14,9 +14,6 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
         "my secret key",
         "lab name",
         "community name", 
-        "scicrunch.org",
-        "http_user_name",
-        "http_password"
     )
 
     dataset = interface.getDataset("dataset_name")

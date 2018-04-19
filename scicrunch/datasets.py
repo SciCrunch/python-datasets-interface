@@ -9,16 +9,24 @@ class Interface:
     >>> interface = scicrunch.datasets.Interface('apikey', 'Lab01', 'Community')
     """
     # initialize the default lab, community that will be used in other methods
-    def __init__(self, key, lab, community, host = None, user=None, pwrd=None):
+    def __init__(self, key, lab, **kwargs, community, host = None, user=None, pwrd=None):
         self.key = key
+        self.lab = lab
+
+        if kwargs is not None:
+            if community in kwargs:
+                self.community = kwargs[community]
+            if host in kwargs:
+                self.host = kwargs[host]
+            if user in kwargs:
+                self.user = kwargs[user]
+            if pwrd in kwargs:
+               self.pwrd = kwargs[pwrd]
         if host is None:
             self.host = 'scicrunch.org'
-        else:
-            self.host = host
-        self.lab = lab
-        self.community = community
-        self.user = user
-        self.pwrd = pwrd
+        if community is None:
+            self.community = 'odc-sci'
+
         url = "https://"
         l = '/'
         url = url + self.host + '/api/1/'
@@ -31,6 +39,8 @@ class Interface:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
+            print(req)
+            print(req.json())
             lab_id = req.json()['data']
         self.__lab_ids = {lab: lab_id}
 
