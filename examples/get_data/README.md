@@ -1,4 +1,4 @@
-# Get data from existing dataset
+# Get Data From Existing Dataset
 If you have an API Key, Lab and community proceed to the next step.
 
 API Key:
