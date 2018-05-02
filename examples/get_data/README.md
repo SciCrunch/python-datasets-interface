@@ -2,11 +2,13 @@
 If you have an API Key, Lab and community proceed to the next step.
 
 API Key:
+
 1. Login to Scicrunch or create an account
 2. Go to My Account -> API Keys
 3. Generate an API Key or get the one under Key
 
 Lab:
+
 Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example dataset. 
 
 
@@ -93,9 +95,13 @@ Put data into dictionaries and lists by experimental group
 ## Line Plot:
 ### Weight vs. Blood Glucose for each mouse 
 One line for each mouse.
+
 x-axis: Weight
+
 y-axis: Blood Glucose Level
+
 Control group has markers 'o'
+
 Experimental group has '+' markers
 ```python
     for l in lines:
