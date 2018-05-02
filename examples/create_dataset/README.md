@@ -44,7 +44,7 @@ Include your api key, the lab name and the community name
     interface = datasets.Interface(
         "api_key",
         "lab_name",
-        "community_name"
+        "community name"
     )
 ```  
 ## Create a dataset template and get its ID 

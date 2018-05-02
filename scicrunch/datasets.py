@@ -9,22 +9,26 @@ class Interface:
     >>> interface = scicrunch.datasets.Interface('apikey', 'Lab01', 'Community')
     """
     # initialize the default lab, community that will be used in other methods
-    def __init__(self, key, lab, **kwargs, community, host = None, user=None, pwrd=None):
+    def __init__(self, key, lab, **kwargs):
         self.key = key
         self.lab = lab
+        self.host = None
+        self.community = None
+        self.user = None
+        self.pwrd = None
 
         if kwargs is not None:
-            if community in kwargs:
-                self.community = kwargs[community]
-            if host in kwargs:
-                self.host = kwargs[host]
-            if user in kwargs:
-                self.user = kwargs[user]
-            if pwrd in kwargs:
-               self.pwrd = kwargs[pwrd]
-        if host is None:
+            if 'community' in kwargs:
+                self.community = kwargs['community']
+            if 'host' in kwargs:
+                self.host = kwargs['host']
+            if 'user' in kwargs:
+                self.user = kwargs['user']
+            if 'pwrd' in kwargs:
+               self.pwrd = kwargs['pwrd']
+        if self.host is None:
             self.host = 'scicrunch.org'
-        if community is None:
+        if self.community is None:
             self.community = 'odc-sci'
 
         url = "https://"
@@ -33,16 +37,16 @@ class Interface:
         self.url = url
         url = self.url+ 'lab/id?labname=' + self.lab+'&portalname=' + self.community +'&key='+ self.key
         lab_id = ''
+        print(url)
         try:
-            req = requests.get(url,auth=(user,pwrd))
+            req = requests.get(url)
+            print(req)
         except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
         else:
-            print(req)
-            print(req.json())
             lab_id = req.json()['data']
-        self.__lab_ids = {lab: lab_id}
+            self.__lab_ids = {lab: lab_id}
 
     # get lab id to access lab
     # basic method to get lab id used only by other methods
@@ -176,8 +180,9 @@ class Interface:
             d['template_id'] = json['template']['id']
             d['description'] = json['description']
             d['publications'] = json['publications']
+            d['fields'] = {}
             for j in json['template']['fields']:
-                d[j['name']] = j['termid']['label']
+                d['fields'][j['name']] = j['termid']['label']
             return d
 
 

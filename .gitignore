@@ -104,3 +104,8 @@ venv.bak/
 
 test_scicrunch.py
 *.swp
+try.py
+mouse1.txt
+*.csv
+data_gen.py
+try.py
