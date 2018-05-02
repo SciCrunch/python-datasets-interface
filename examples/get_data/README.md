@@ -22,7 +22,7 @@ Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example 
 ```
 
 ## Make an Interface object to connect with the scicrunch server
-Include your api key, the lab name and the community name.
+Include your api key and the lab name.
 ```python
     dataset_id = '42'
     dataset_name = 'Example Analysis Dataset'
