@@ -21,7 +21,7 @@ Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example 
 
 ## Make an Interface object to connect with the scicrunch server
 Include your api key, the lab name and the community name.
-```
+```python
     dataset_id = '42'
     dataset_name = 'Example Analysis Dataset'
     lab_name = 'ODC-SCI Demo Laboratory'
@@ -33,14 +33,14 @@ Include your api key, the lab name and the community name.
 
 ## Get the data from the Example Analysis Dataset
 The data will be in the format of a list of dictionaries, each list entry is a seperate data entry, the dictionary contains the data corresponding to the data field
-```
+```python
     data = Interface.getdata(dataset_name)
     print(data)
 ```
 ## Get data fields
 These correspond to what the data means and will be useful in analysis
 
-```
+```python
     info = Interface.getInfo(dataset_name)
     print(info)
 
@@ -52,7 +52,7 @@ These correspond to what the data means and will be useful in analysis
 
 ## Organize the data into a matrix with the columns as the data fields and the rows as seperate data entries
 This will put the data into a DataFrame object from the pandas library. This will make it easier to make graphs and plots with.
-```
+```python
     matrix = [[0 for x in range(len(headers))]for y in range(len(data))]
 
     for d in range(len(data)):
@@ -74,7 +74,7 @@ This will put the data into a DataFrame object from the pandas library. This wil
 
 # Organization of Data
 Put data into dictionaries and lists by experimental group
-```
+```python
     groups = {}
     lines = {}
     for m in matrix:
@@ -97,7 +97,7 @@ x-axis: Weight
 y-axis: Blood Glucose Level
 Control group has markers 'o'
 Experimental group has '+' markers
-```
+```python
     for l in lines:
         if l in groups['Control']:
             plt.plot(lines[l]['weight'], lines[l]['glucose'], marker='o', markerfacecolor='red')
@@ -110,7 +110,7 @@ Experimental group has '+' markers
 
 ## Bar Graph
 ### Average Weight and Blood Glucose Levels for Each Experimental Group
-```
+```python
     c_weight = 0
     e_weight = 0
     c_gbl = 0
@@ -141,7 +141,7 @@ Experimental group has '+' markers
 
 ## Scatter Plot
 ### Average weight vs. Average Glucose for Each Mouse
-```
+```python
 x = []
 y = []
 for l in lines:
