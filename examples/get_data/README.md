@@ -15,7 +15,7 @@ Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example 
 ## Import module and libraries to plot the data
 ```python
 
-    from scicrunch.datasets import *
+    from scicrunch import datasets
     import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
