@@ -37,10 +37,8 @@ class Interface:
         self.url = url
         url = self.url+ 'lab/id?labname=' + self.lab+'&portalname=' + self.community +'&key='+ self.key
         lab_id = ''
-        print(url)
         try:
             req = requests.get(url)
-            print(req)
         except IOError as e:
             if hasattr(e, 'code'):
                 print('Error: ', e.code)
@@ -188,7 +186,7 @@ class Interface:
 
     #/api/1/datasets/search?datasetid=${datasetid}
     # get actual data
-    def __getdata(self, data_id):
+    def __getData(self, data_id):
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
         try:
             req = requests.get(url,auth=(self.user,self.pwrd))
@@ -206,13 +204,13 @@ class Interface:
     # retrieves data information for specified dataset
     # can use a field name to query for
     # if no lab name specified default used
-    def getdata(self, dataset, query=None, lab=None):
+    def getData(self, dataset, query=None, lab=None):
         """
         Arguments: dataset name, query(optional), lab name(optional)
         Returns list of data
         Query field: Returns only list of data from field indicated 
 
-        >>> data = interface.getdata('Mouse_Dataset', 'AnimalID')
+        >>> data = interface.getData('Mouse_Dataset', 'AnimalID')
         """
         data_id = self.__getDataset(self.__getLabID(self.lab), dataset)        
         url = self.url + 'datasets/search?datasetid=' + str(data_id) + '&key=' + self.key
