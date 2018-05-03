@@ -1,12 +1,14 @@
-# Get data from existing dataset
+# Get Data From Existing Dataset
 If you have an API Key, Lab and community proceed to the next step.
 
 API Key:
+
 1. Login to Scicrunch or create an account
 2. Go to My Account -> API Keys
 3. Generate an API Key or get the one under Key
 
 Lab:
+
 Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example dataset. 
 
 # Modules Used
@@ -21,15 +23,15 @@ In order to get this module to run you may need to install: pandas, matplotlib, 
 ## Import module and libraries to plot the data
 ```python
 
-    from scicrunch.datasets import *
+    from scicrunch import datasets
     import pandas as pd
     import numpy as np
     import matplotlib.pyplot as plt
 ```
 
 ## Make an Interface object to connect with the scicrunch server
-Include your api key, the lab name and the community name.
-```
+Include your api key and the lab name.
+```python
     dataset_id = '42'
     dataset_name = 'Example Analysis Dataset'
     lab_name = 'ODC-SCI Demo Laboratory'
@@ -41,14 +43,14 @@ Include your api key, the lab name and the community name.
 
 ## Get the data from the Example Analysis Dataset
 The data will be in the format of a list of dictionaries, each list entry is a seperate data entry, the dictionary contains the data corresponding to the data field
-```
+```python
     data = interface.getData(dataset_name)
 ```
 ## Get data fields
 These correspond to what the data means and will be useful in analysis
 
-```
-    info = interface.getInfo(dataset_name)
+```python
+    info = Interface.getInfo(dataset_name)
 
     headers = []
     for i in info['fields']:
@@ -57,7 +59,7 @@ These correspond to what the data means and will be useful in analysis
 
 ## Organize the data into a matrix with the columns as the data fields and the rows as seperate data entries
 This will put the data into a DataFrame object from the pandas library. This will make it easier to make graphs and plots with.
-```
+```python
     matrix = [[0 for x in range(len(headers))]for y in range(len(data))]
 
     for d in range(len(data)):
@@ -79,7 +81,7 @@ This will put the data into a DataFrame object from the pandas library. This wil
 
 # Organization of Data
 Put data into dictionaries and lists by experimental group
-```
+```python
     groups = {}
     lines = {}
     for m in matrix:
@@ -98,16 +100,25 @@ Put data into dictionaries and lists by experimental group
 ## Line Plot:
 ### Weight vs. Blood Glucose for each mouse 
 One line for each mouse.
+
 x-axis: Weight
+
 y-axis: Blood Glucose Level
+
 Control group has markers 'o'
+
 Experimental group has '+' markers
-```
+```python
     for l in lines:
         if l in groups['Control']:
-            plt.plot(lines[l]['weight'], lines[l]['glucose'], marker='o', markerfacecolor='red')
+            tempw = list(map(float, lines[l]['weight']))
+            tempg = list(map(float, lines[l]['glucose']))
+            plt.plot(tempw, tempg, marker='o', markerfacecolor='red')
+
         else:
-            plt.plot(lines[l]['weight'], lines[l]['glucose'], marker='+', markerfacecolor='blue')
+            tempw = list(map(float, lines[l]['weight']))
+            tempg = list(map(float, lines[l]['glucose']))
+            plt.plot(tempw, tempg, marker='+', markerfacecolor='blue')
     plt.xlabel('Weight (g)')
     plt.ylabel('Blood Glucose Levels')
     plt.title('Weight vs. Blood Glucose Levels for Each Mouse')
@@ -118,7 +129,7 @@ Experimental group has '+' markers
 
 ## Bar Graph
 ### Average Weight and Blood Glucose Levels for Each Experimental Group
-```
+```python
     c_weight = 0
     e_weight = 0
     c_gbl = 0
@@ -149,7 +160,7 @@ Experimental group has '+' markers
 
 ## Scatter Plot
 ### Average weight vs. Average Glucose for Each Mouse
-```
+```python
 x = []
 y = []
 for l in lines:

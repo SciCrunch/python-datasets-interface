@@ -40,11 +40,11 @@ Lab:
 ```                    
 ## Make an Interface object to connect with the scicrunch server
 Include your api key, the lab name and the community name
-```
+```python
     interface = datasets.Interface(
         "api_key",
         "lab_name",
-        "community name"
+        community="community name"
     )
 ```  
 ## Create a dataset template and get its ID 
@@ -52,7 +52,7 @@ The only argument is the name of the dataset template.
 Then add the dataset fields to the template. Specify the template ID gotten when the template was created, and the fields specified in the mouse1.txt file.
 Set a field as the subject
 After a field has been set as a subject the template can be submitted
-```
+```python
     template_id = interface.createDatasetTemplate("Mouse_Example")
     
     for field in fields:
@@ -64,7 +64,7 @@ After a field has been set as a subject the template can be submitted
 Make the dataset with its name, long name, a description, publications and the ID of the template you would like to use
 Then add data to the dataset using the example data from the file 'mouse1.txt'.
 After the data has been added submit the dataset
-```
+```python
     dataset = interface.addDataset("Mouse_Data_Example", "Example of how to create a dataset", "Fake dataset made into a template", "PMID:0000", template_id)
     for d in data:
         interface.addDatasetRecord(dataset.d_id, d)

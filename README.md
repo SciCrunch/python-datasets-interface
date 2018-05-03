@@ -9,8 +9,8 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
 
 ## usage
 ```python
-    import scicrunch
-    interface = scicrunch.datasets.Interface(
+    from scicrunch import datasets
+    interface = datasets.Interface(
         "my secret key",
         "lab name",
         "community name", 
