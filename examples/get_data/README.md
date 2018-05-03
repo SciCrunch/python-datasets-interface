@@ -9,6 +9,14 @@ API Key:
 Lab:
 Use the publicly available lab, ODC-SCI Demo Laboratory, to retrieve an example dataset. 
 
+# Modules Used
+In order to get this module to run you may need to install: pandas, matplotlib, and python3-tk
+```
+    pip install pandas
+    pip install matplotlib
+    apt install python3-tk
+```
+
 
 ## Import module and libraries to plot the data
 ```python
@@ -34,20 +42,17 @@ Include your api key, the lab name and the community name.
 ## Get the data from the Example Analysis Dataset
 The data will be in the format of a list of dictionaries, each list entry is a seperate data entry, the dictionary contains the data corresponding to the data field
 ```
-    data = Interface.getdata(dataset_name)
-    print(data)
+    data = interface.getData(dataset_name)
 ```
 ## Get data fields
 These correspond to what the data means and will be useful in analysis
 
 ```
-    info = Interface.getInfo(dataset_name)
-    print(info)
+    info = interface.getInfo(dataset_name)
 
     headers = []
     for i in info['fields']:
         headers.append(i)
-    print(headers)
 ```
 
 ## Organize the data into a matrix with the columns as the data fields and the rows as seperate data entries
@@ -103,6 +108,9 @@ Experimental group has '+' markers
             plt.plot(lines[l]['weight'], lines[l]['glucose'], marker='o', markerfacecolor='red')
         else:
             plt.plot(lines[l]['weight'], lines[l]['glucose'], marker='+', markerfacecolor='blue')
+    plt.xlabel('Weight (g)')
+    plt.ylabel('Blood Glucose Levels')
+    plt.title('Weight vs. Blood Glucose Levels for Each Mouse')
     plt.show()
 
 
@@ -124,16 +132,16 @@ Experimental group has '+' markers
             e_weight = e_weight + sum(map(float, lines[l]['weight']))/float(len(lines[l]['weight']))
             e_gbl = e_gbl + sum(map(float, lines[l]['glucose']))/float(len(lines[l]['glucose']))
 
-    c_weight = c_weight/len(groups['Control'])
-    c_gbl = e_gbl/len(groups['Control'])
-    e_weight = e_weight/len(groups['Experimental'])
+    c_weight = c_weight/len(groups['Control'])*100
+    c_gbl = c_gbl/len(groups['Control'])
+    e_weight = e_weight/len(groups['Experimental'])*100
     e_gbl = e_gbl/len(groups['Experimental'])
 
     bars = [c_weight, e_weight, c_gbl, e_gbl]
-    labels = ['Control Weight', 'Experimental Weight', 'Control Blood Glucose Levels', 'Experimental Blood Glucose Levels']
+    labels = ['Control Weight mg ', 'Experimental Weight mg', 'Control Blood Glucose Levels', 'Experimental Blood Glucose Levels']
     y_pos = np.arange(len(bars))
     plt.bar(y_pos, bars, align='center', alpha=0.5)
-    plt.xticks(y_pos, labels)
+    plt.xticks(y_pos, labels, rotation=90)
     plt.ylabel('Quant')
     plt.show()
 
@@ -148,6 +156,8 @@ for l in lines:
     x.append(sum(map(float, lines[l]['weight']))/ float(len(lines[l]['weight'])))
     y.append(sum(map(float, lines[l]['glucose']))/ float(len(lines[l]['glucose'])))
 
+plt.ylabel('Average Glucose')
+plt.xlabel('Average Weight')
 plt.scatter(x, y)
 plt.show()
 
