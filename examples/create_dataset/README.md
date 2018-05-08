@@ -17,7 +17,7 @@ Lab:
 ## Import module and get data from example dataset 'mouse1.txt'
 ```python
     
-    from scicrunch.datasets import *
+    from scicrunch import datasets
 
     # For reading in the example dataset file 'mouse1.txt'
     fields = []
