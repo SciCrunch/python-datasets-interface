@@ -15,7 +15,7 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     interface = datasets.Interface(
         "my secret key",
         "lab name",
-        "community name", 
+        community="community name"
     )
 
     dataset = interface.getDataset("dataset_name")
@@ -26,7 +26,7 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     dataset.addDatasetRecord(fields)
     dataset.submitDataset("status")
 
-    data = interface.getdata(dataset)
+    data = interface.getData(dataset)
 
     # dataset template methods
     template_id = interface.createDatasetTemplate("template_name")
