@@ -209,6 +209,48 @@ class Interface:
                 d['fields'][j['name']] = j['termid']['label']
             return d
 
+    # getDatset will give same information
+    def newGetInfo(self, dataset, lab=None):
+        """
+        Argument: dataset name
+        Returns a dataset Object with all information
+
+        >>> interface.getInfo('Mouse_1')
+        """
+        if not lab:
+            lab = self.lab
+            labid = self.__lab_ids[lab]
+            if labid == '':
+                self.__lab_ids[lab] = self.__getLabID(lab)
+            there = False
+            for i in self.__lab_ids:
+                if i == lab:
+                    labid = self.__lab_ids[lab]
+                    there = True
+                if not there:
+                    labid = __getLabID(self.lab)
+        self.__lab_ids[lab] = labid
+        d_id = self.__getDataset(labid, dataset)
+        url = self.url + 'datasets/info?datasetid=' + str(d_id) + '&key=' +self.key
+        try:
+            req = requests.get(url,auth=(self.user,self.pwrd))
+        except IOError as e:
+            if hasattr(e, 'code'):
+                print('Error: ', e.code)
+        else:
+            json = req.json()['data']
+            d = {}
+            d['d_id'] = json['id']
+            d['name'] = json['name']
+            d['long_name'] = json['long_name']
+            d['template_id'] = json['template']['id']
+            d['description'] = json['description']
+            d['publications'] = json['publications']
+            d['fields'] = {}
+            for j in json['template']['fields']:
+                d['fields'][j['name']] = j['termid']['label']
+            return d
+
     #/api/1/datasets/search?datasetid=${datasetid}
     # get actual data
     def __getData(self, data_id):
