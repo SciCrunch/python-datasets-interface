@@ -7,6 +7,7 @@ import requests
 from typing import Union, Dict, List
 from urllib.parse import urljoin
 
+
 def user_info(key, **kwargs):
     session = ScicrunchSession(key, **kwargs)
     return session.get('user/info')
@@ -400,21 +401,11 @@ class Interface(ScicrunchSession, Tools):
             'publications': publications,
             'template_id': template_id,
         }
-        self.post('datasets/add', data=data)
-
-        # TODO: Can't I just use response?
-        info = self.getInfo(name)
+        info = self.post('datasets/add', data=data)
         template_id = info['template_id']
-        d_id = info['d_id']
-        del info['name']
-        del info['template_id']
-        del info['long_name']
-        del info['publications']
-        del info['description']
-        del info['d_id']
-        fields = info
-        dataset = Dataset(d_id, name, long_name, publications, description, template_id, self.lab, self.__lab_ids[self.lab], self, fields)
-        #add dataset_ID
+        d_id = info['id']
+        fields = info['template']['fields']
+        dataset = Dataset(d_id, name, long_name, publications, description, template_id, self.lab_name, self.labid, self, fields)
         return dataset
 
     #/datasets/records/add?datasetid=fields=
