@@ -3,106 +3,19 @@ import numpy as np
 import os
 import pandas as pd
 import re
-import requests
 from typing import Union, Dict, List
-from urllib.parse import urljoin
+from .dataset import Dataset
+from .scicrunch_session import ScicrunchSession
+from .tools import Tools
 
 
 def user_info(key, **kwargs):
+    """ For debugging purposes to see what permissions you have with the API key. """
     session = ScicrunchSession(key, **kwargs)
     return session.get('user/info')
 
 
-class Tools:
-    """ Easy Tools """
-
-    def is_int(self, val):
-        """ Check if value is a possible integer. """
-        try:
-            int(val)
-            return True
-        except:
-            return False
-
-    def clean(self, val):
-        """ Generic string cleaning. """
-        return str(val).strip().lower()
-
-    def are_equal(self, val1, val2):
-        """ Check if values are equal. """
-        return self.clean(val1) == self.clean(val2)
-
-
-class ScicrunchSession:
-    """ Boiler plate for SciCrunch server responses. """
-
-    def __init__(self,
-                 key: str,
-                 host: str = 'scicrunch.org',
-                 auth: tuple = (None, None)) -> None:
-        """ Initialize Session with SciCrunch Server.
-
-        :param str key: API key for SciCrunch [should work for test hosts].
-        :param str host: Base url for hosting server [can take localhost:8080].
-        :param str user: username for test server.
-        :param str password: password for test server.
-        """
-        self.key = key
-        self.host = host
-
-        # https is only for security level environments
-        if self.host.startswith('localhost'):
-            self.api = "http://" + self.host + '/api/1/'
-        else:
-            self.api = "https://" + self.host + '/api/1/'
-
-        self.session = requests.Session()
-        self.session.auth = auth
-        self.session.headers.update({'Content-type': 'application/json'})
-
-    def __session_shortcut(self, endpoint: str, data: dict, session_type: str = 'GET') -> dict:
-        """ Short for both GET and POST.
-
-        Will only crash if success is False or if there a 400+ error.
-        """
-        def _prepare_data(data: dict) -> dict:
-            """ Check if request data inputed has key and proper format. """
-            if data is None:
-                data = {'key': self.key}
-            elif isinstance(data, dict):
-                data.update({'key': self.key})
-            else:
-                raise ValueError('request session data must be of type dictionary')
-            return json.dumps(data)
-
-        url = urljoin(self.api, endpoint)
-        data = _prepare_data(data)
-        try:
-            # TODO: Could use a Request here to shorten code.
-            if session_type == 'GET':
-                response = self.session.get(url, data=data)
-            else:
-                response = self.session.post(url, data=data)
-            # crashes if success on the server side is False
-            if not response.json()['success']:
-                raise ValueError(response.text + f' -> STATUS CODE: {response.status_code}')
-            response.raise_for_status()
-        # crashes if the server couldn't use it or it never made it.
-        except requests.exceptions.HTTPError as error:
-            raise error
-
-        # {'data':{}, 'success':bool}
-        return response.json()['data']
-
-    def get(self, endpoint: str, data: dict = None) -> dict:
-        """ Quick GET for SciCrunch. """
-        return self.__session_shortcut(endpoint, data, 'GET')
-
-    def post(self, endpoint: str , data: dict = None) -> dict:
-        """ Quick POST for SciCrunch. """
-        return self.__session_shortcut(endpoint, data, 'POST')
-
-
+# TODO: modify user/info output to no return the fields of datasets... Too much unless asked for by user.
 class Interface(ScicrunchSession, Tools):
     """
     Interface for connecting to scicrunch server
@@ -136,13 +49,17 @@ class Interface(ScicrunchSession, Tools):
         )
 
         self.user_info = self.get('user/info')
-
         self.accessible_communities = self.user_info['communities']
         self.accessible_labs = self.user_info['labs']
         self.accessible_datasets = self.user_info['datasets']
 
         self.lab_name, self.labid = self.process_lab(lab)
         self.community_name, self.cid = self.process_community(community)
+
+    def refresh_user_info(self):
+        """ Need to have a global cached permissions & needs to be updated with each addition. """
+        self.user_info = self.get('user/info')
+        self.accessible_datasets = self.user_info['datasets']
 
     def process_lab(self, lab):
         field = 'labid' if self.is_int(lab) else 'name'
@@ -166,8 +83,28 @@ class Interface(ScicrunchSession, Tools):
             f'{self.user_info["communities"]}'
         )
 
+    def process_dataset(self, dataset):
+        if isinstance(dataset, Dataset):
+            return dataset.name, dataset.id
+        field = 'id' if self.is_int(dataset) else 'name'
+        for dataset_record in self.user_info['datasets']:
+            if self.are_equal(dataset, dataset_record[field]):
+                return dataset_record['name'], dataset_record['id']
+        # For readability
+        accessible_datasets = [
+            { 'name': d['name'], 'id': d['id'] }
+            for d in dl
+            for dl in self.get_accessible_datasets().values()
+        ]
+        raise ValueError(
+            f'You do not have access to dataset [{dataset}], ' +
+            f'but you do have access to the following datasets:\n' +
+            f'{accessible_datasets}'
+        )
+
+    # Does this give more information than user_info? I really hope so.
     def get_accessible_datasets(self) -> List[dict]:
-        ''' Complete metadata for current lab datasets '''
+        ''' Complete metadata for current lab datasets. '''
         potential_datasets = {}
         for lab in self.accessible_labs:
             try:
@@ -177,27 +114,12 @@ class Interface(ScicrunchSession, Tools):
                 pass
         return potential_datasets
 
-    # get lab id to access lab
-    # basic method to get lab id used only by other methods
-    # def __getLabID(self, lab):
-    #     url = self.url+ 'lab/id?labname=' + lab + '&portalname=' + self.community + '&key=' + self.key
-    #     lab_id = self.get(url).json()['data']
-    #     self.__lab_ids = {lab: lab_id}
-    #     return lab_id
+    def getRawDataset(self, dataset: Union[str, int]) -> dict:
+        """ Returns complete server response of the dataset. """
+        dataset_name, dataset_id = self.process_dataset(dataset)
+        return self.get(f'datasets/id?labid={self.labid}&datasetname={dataset_name}')
 
-    # doesnt pass in Dataset object
-    # requires lab id unlike public method
-    def getRawDataset(self, dataset_name: str) -> dict:
-        # TODO:
-        # labs must be in it's ID
-        # labid = process_lab(labid)
-        # datasets need to be in string names
-        # datasetname = process_datasetname(datasetname)
-        return self.get(
-            f'datasets/id?labid={self.labid}&datasetname={dataset_name}')
-
-    # TODO: returns Dataset type instead of object
-    def getDataset(self, dataset_name: str) -> object:
+    def getDataset(self, dataset: Union[str, int]) -> object:
         """ Get Dataset meta from Name alone.
 
         :param str dataset_name: Name of dataset within established lab.
@@ -205,95 +127,72 @@ class Interface(ScicrunchSession, Tools):
 
         >>> dataset = interface.getDataset('Mouse_dataset')
         """
-        try:
-            dataset_id = self.get(f'datasets/id?labid={self.labid}&datasetname={dataset_name}')
-        except:
-            raise ValueError(
-                f"You don't have access to \"{dataset_name}\", " +
-                f"but have have access to these datasets " +
-                f"{[s['name'] for sl in self.get_accessible_datasets().values() for s in sl]}"
-            )
-        info = self.getInfo(dataset_id)
-        name = info['name']
-        template_id = info['template_id']
-        long_name = info['long_name']
-        publications = info['publications']
-        description = info['description']
-        del info['name']
-        del info['long_name']
-        del info['publications']
-        del info['description']
-        del info['d_id']
-        fields = info
+        # will break & return usable datasets if you don't have permission for the one selected.
+        dataset_name, dataset_id = self.process_dataset(dataset)
+        info = self.get(f'datasets/id?labid={self.labid}&datasetname={dataset_name}')
         dataset = Dataset(
-            dataset_id,
-            name,
-            long_name,
-            publications,
-            description,
-            template_id,
+            info['id'],
+            info['name'],
+            info['long_name'],
+            info['publications'],
+            info['description'],
+            info['template_id'],
             self.lab_name,
             self.labid,
             self,
-            fields)
+            info['template']['fields'])
         return dataset
 
-    def getDataFrame(self, dataset=None, dataset_id=None, query=None):
-        """
-        Arguments: dataset name, query(optional), lab name(optional)
-        Returns Pandas DataFrame
-        Query field: Returns DataFrame from field indicated
+    def getDataset(self, dataset: Union[str, int]) -> object:
+        """ Get Dataset meta from ID alone.
 
-        >>> data = interface.getDataFrame('Mouse_Dataset', 'AnimalID')
+        :param str dataset_name: Name of dataset within established lab.
+        :returns: Dataset object
+
+        >>> dataset = interface.getDataset('300')
         """
-        data = self.getData(dataset=dataset, dataset_id=dataset_id, query=query)
+        # will break & return usable datasets if you don't have permission for the one selected.
+        dataset_name, dataset_id = self.process_dataset(dataset)
+        info = self.get(f'datasets/info?datasetid={dataset_id})')
+        dataset = Dataset(
+            info['id'],
+            info['name'],
+            info['long_name'],
+            info['publications'],
+            info['description'],
+            info['template_id'],
+            self.lab_name,
+            self.labid,
+            self,
+            info['template']['fields'])
+        return dataset
+
+    def getDataFrame(self, dataset: Union[str, int]) -> pd.DataFrame:
+        """
+        :param Union[str, int] dataset: Dataset you wish to get the metadata for.
+
+        >>> df = interface.getDataFrame('Mouse_Dataset')
+        """
+        data = self.getData(dataset=dataset)
         df = pd.DataFrame(data)
         # converts np.Nan types to None
         # saves headache since np.Nan aren't considered null
         df = df.where(pd.notnull(df), None)
-        # adds respected header for the column
-        if query:
-            df.columns = [query]
         return df
 
-    # getDatset will give same information
-    def getInfo(self, dataset_id):
-        """
-        Argument: dataset name
-        Returns a dataset Object with all information
+    def getData(self, dataset: Union[int,str], field_name: str = None) -> list:
+        """ Returns only list of data from query field indicated or full list by default.
 
-        >>> interface.getInfo('Mouse_1')
-        """
-        json = self.get(f'datasets/info?datasetid={dataset_id})')
-        data = {
-            'd_id': json['id'],
-            'name': json['name'],
-            'long_name': json['long_name'],
-            'template_id': json['template']['id'],
-            'description': json['description'],
-            'publications': json['publications'],
-            'fields': {},
-        }
-        for j in json['template']['fields']:
-            data['fields'][j['name']] = j['termid']['label']
-        return data
+        :param Union[str, int] dataset: Dataset you wish to get the metadata for.
+        :param str field_name: Field that you want only.
 
-    # TODO: endpoint doesn't seem to exist anymore. double check in api-controller.
-    # def getData(self, dataset: Union[int,str], field_name: str = None) -> list:
-    #     """ Returns only list of data from query field indicated or full list by default.
-    #
-    #     :param int dataset_id: Dataset ID.
-    #     :param str field_name: Field that you want only.
-    #
-    #     >>> data = interface.getData('Mouse_Dataset', 'AnimalID')
-    #     """
-    #     if not self.is_int(dataset):
-    #         dataset_id = self.getDataset(dataset_name=dataset)
-    #     print(dataset_id)
-    #     records = self.get(f'datasets/search?datasetid={dataset_id}')['records']
-    #     if field_name:
-    #         return [r[field_name] for r in records]
-    #     return records
+        >>> data = interface.getData('Mouse_Dataset', 'AnimalID')
+        """
+        dataset_name, dataset_id = self.process_dataset(dataset)
+        records = self.get(f'datasets/search?datasetid={dataset_id}')['records']
+        if field_name:
+            return [r[field_name] for r in records]
+        return records
 
     def createDatasetTemplate(self, name):
         """
@@ -332,40 +231,48 @@ class Interface(ScicrunchSession, Tools):
                            field_name: str,
                            required: bool = False,
                            queryable: bool = True,
-                           ilxid: int = None) -> dict:
+                           ilx_id: int = None) -> dict:
         """ Adds a data field to previously created template
+
+        Should not use ilx_id parameter unless you made a custom entity for your dataset.
 
         :param int template_id: Lab's template id for dataset.
         :param str field_name: Dataset field name.
         :param bool required: If field is required in dataset.
         :param bool queryable: If field can be queried.
-        :param int ilxid: InterLex ID [default: "Unmapped Data Element"].
+        :param int ilx_id: InterLex ID [default: "Unmapped Data Element"].
 
-        >>> interface.createDatasetField(1234, 'Study', required=False, queryable=True)
+        >>> interface.createDatasetField(
+                template_id = 1234,
+                field_name = 'Study',
+                required = False,
+                queryable = True
+            )
         """
         data = {
             'template_id': template_id,
             'name': field_name,
-            'ilxid': ilxid if ilxid else self.defaultILX(),
+            'ilxid': ilx_id if ilx_id else self.defaultILX(),
             'required': 1 if required else 0,
             'queryable': 1 if queryable else 0,
         }
         return self.post('datasets/fields/add', data=data)
 
-    #/datasets/field/annotation/add?tamplate_id=name=annotation_name=annotation_value=
-    #annotation name = subject to mark field as subject
     def setAsSubjectField(self, template_id: int, field_name: str) -> dict:
         """ Template must have a data field marked subject in order for it to be submitted.
 
         :param int template_id: Lab's template id for dataset.
         :param str field_name: Dataset field name.
 
-        >>> interface.setAsSubjectField('1234', 'AnimalID')
+        >>> interface.setAsSubjectField(
+                template_id = '1234',
+                field_name  = 'AnimalID',
+            )
         """
         data = {
             'template_id': template_id,
             'name': field_name,
-            'annotation_name': 'subject',
+            'annotation_name': 'subject', # subject to mark field as subject
         }
         return self.post('datasets/field/annotation/add', data=data)
 
@@ -378,22 +285,34 @@ class Interface(ScicrunchSession, Tools):
         """
         return self.post('datasets/template/submit', data={'template_id':template_id})
 
-    def addDataset( self,
-                    name: str,
-                    long_name: str,
-                    description: str,
-                    publications: str,
-                    template_id: int
-                  ) -> dict:
-        # TODO: Should publications just be publication?
-        """
-        Arguments: name, long name, description, publications, and id of template to be used
-        Returns a Dataset object containing all information of new dataset
+    def addDataset(self,
+                   name: str,
+                   long_name: str,
+                   description: str,
+                   publications: Union[list, str],
+                   template_id: Union[str, int]) -> dict:
+        # TODO: Check how publications are store in DB.
+        """ Creates a new dataset within the Lab and the Community associated with it.
 
-        Data must still be added to the dataset after creation
+        Data must still be added to the dataset after creation.
 
-        >>> interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
+        :param str name: New shortened dataset name.
+        :param str long_name: Complete New dataset name.
+        :param str description: Description of dataset intended contents.
+        :param str publications: Publications associated with dataset. Comma seperated in DB.
+        :param str template_id:
+        :returns: a Dataset object containing all information of new dataset
+
+        >>> interface.addDataset(
+                name         = 'Mouse_Data',
+                long_name    = 'Data for mice',
+                description  = 'Dataset about VGLUT/CRE expressing mice',
+                publications = 'PMID:12345', 'PMID:56789',
+                template_id  = '206',
+            )
         """
+        # Publications are stored as a single single with delimiter comma.
+        publications = ', '.join(publications) if isinstance(publications, list) else publications
         data = {
             'name':name,
             'long_name': long_name,
@@ -402,102 +321,57 @@ class Interface(ScicrunchSession, Tools):
             'template_id': template_id,
         }
         info = self.post('datasets/add', data=data)
-        template_id = info['template_id']
-        d_id = info['id']
-        fields = info['template']['fields']
-        dataset = Dataset(d_id, name, long_name, publications, description, template_id, self.lab_name, self.labid, self, fields)
+        self.refresh_user_info()
+        dataset = Dataset(
+            info['id'],
+            info['name'],
+            info['long_name'],
+            info['publications'],
+            info['description'],
+            info['template_id'],
+            self.lab_name,
+            self.labid,
+            self,
+            info['template']['fields'])
         return dataset
 
-    #/datasets/records/add?datasetid=fields=
-    #input fields as dictionary {'field':'value', 'field2': 'value2'}
-    def addDatasetRecord(self, d_id: int, fields: dict) -> dict:
-        """
-        Arguments: dataset id, fields of data to add to dataset
+    # TODO: figure out what this post actually returns.
+    def addDatasetRecord(self, dataset: int, fields: dict) -> dict:
+        """ Add row of data to dataset.
 
-        Add data to the previously created dataset
-        Can get dataset id from dataset object that was made when addDataset was called
+        Add data to the previously created dataset.
 
-        >>> interface.addDatasetRecord('12345','{'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'}' )
+        :param int dataset: ID of dataset to add row to.
+        :param dict fields: Key is the column and the Value is the data added to the column.
+        :returns: Dataset dict with meta from row added.
+
+        >>> interface.addDatasetRecord(
+                dataset = '12345',
+                fields     = {'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'},
+            )
         """
+        dataset_name, dataset_id = self.process_dataset(dataset)
         data = {
-            'datasetid': d_id,
+            'datasetid': dataset_id,
             'fields': fields,
         }
         return self.post('datasets/records/add', data=data)
 
-    def submitDataset(self, dataset, status):
-        """
-        Arguments: dataset name to submit, status of the submit
-        Valid status inputs are pending, rejected, approved, approved-internal, not-submitted
+    def submitDataset(self, dataset: Union[str, int], status: str = 'approved') -> dict:
+        """ Update status of Dataset being worked on.
 
-        >>> interface.submitDataset('Mouse_Dataset', 'approved')
+        :param Union[str, int] dataset: Name or ID of dataset within established lab.
+        :param str status: Status of dataset.
+            Valid status inputs are pending, rejected, approved, approved-internal, not-submitted
+
+        >>> interface.submitDataset(
+                dataset = 'Mouse_Dataset',
+                status  = 'approved',
+            )
         """
         dd = self.getDataset(dataset)
-        datasetid = dd.d_id
         data = {
-            'datasetid': datasetid,
+            'datasetid': dd.id,
             'status':status,
         }
         return self.post('datasets/change-lab-status', data=data)
-
-class Dataset:
-    """
-    Dataset class stores information about a specific dataset from scicrunch server
-    Uses the dataset id, dataset name, long name, associated publications, description
-    template id, lab name, lab d, interface associated with it, and data fields
-
-    Creates a dataset on the scicrunch server and returns the information
-
-    >>> from scicrunch.datasets import Dataset
-
-    >>> dataset = interface.addDataset('Mouse_Data', 'Data for mice', 'Dataset about VGLUT/CRE expressing mice', 'PMID:12345', '1234' )
-
-    or
-
-    Returns dataset object for a previously created dataset on the scicrunch server
-
-    >>> dataset = interface.getDataset('Mouse_dataset')
-    """
-
-    def __init__(self, d_id, name, long_name, publications, description, template_id, lab, lab_id, interface, fields):
-        self.d_id = d_id
-        self.name = name
-        self.long_name = long_name
-        self.publications = publications
-        self.description = description
-        self.template_id = template_id
-        self.lab = lab
-        self.lab_id = lab_id
-        self.interface = interface
-        self.fields = fields
-
-
-    def get_fields(self):
-        """
-        Returns all field types associated with dataset
-
-        >>> dataset.get_fields()
-        """
-        return self.fields
-
-
-    def addDatasetRecord(self, fields):
-        """
-        Adds a record to the dataset from given fields
-
-        >>> dataset.addDatasetRecord({'Gender': 'Female', 'AnimalID':'4', 'Scientist':'Joe'})
-        """
-        return self.interface.addDatasetRecord(self.d_id, fields)['success']
-
-
-    def submitDataset(self, status):
-        """
-        Submits a dataset to a lab
-        Valid Status input: pending, rejected, approved, approved-internal, not-submitted
-
-        >>> dataset.submitDataset('pending')
-        """
-        test =  self.interface.submitDataset(self.name, status)['success']
-        if test:
-            self.status = status
-        return test
