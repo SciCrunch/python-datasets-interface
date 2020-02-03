@@ -359,12 +359,12 @@ class Interface(ScicrunchSession, Tools):
         }
         return self.post('datasets/records/add', data=data)
 
-    def submitDataset(self, dataset: Union[str, int], status: str = 'approved') -> dict:
+    def updateDatasetStatus(self, dataset: Union[str, int], status: str = 'pending') -> dict:
         """ Update status of Dataset being worked on.
 
         :param Union[str, int] dataset: Name or ID of dataset within established lab.
         :param str status: Status of dataset.
-            Valid status inputs are pending, rejected, approved, approved-internal, not-submitted
+            Valid status inputs are pending, rejected, approved-internal, not-submitted
 
         >>> interface.submitDataset(
                 dataset = 'Mouse_Dataset',

@@ -40,7 +40,8 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     record = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
     interface.addDatasetRecord(dataset.id, record=record)
 
-    interface.submitDataset(dataset, "status change if you have permissions")
+    # Valid status inputs are pending, rejected, approved-internal, not-submitted
+    interface.updateDatasetStatus(dataset, "status change if you have permissions")
 
 
 ```
