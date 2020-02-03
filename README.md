@@ -11,8 +11,8 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
 
 ## usage
 ```python
-    from scicrunch import datasets
-    interface = datasets.Interface(
+    from scicrunch import Interface
+    interface = Interface(
         "my secret key",
         "lab name",
         community="community name"
@@ -21,9 +21,9 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     dataset = interface.getDataset("dataset_name")
 
     dataset_fields = dataset.get_fields()
-    fields = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
+    record = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
     # add dataset records and submit dataset using dataset object
-    dataset.addDatasetRecord(fields)
+    dataset.addDatasetRecord(record)
     dataset.submitDataset("status")
 
     data = interface.getData(dataset)
@@ -33,14 +33,14 @@ pip install git+git://github.com/SciCrunch/python-datasets-interface
     interface.createDatasetField(template_id, "field_name", "if_required", "if_queryable")
     interface.setAsSubjectField(template_id, "field_name", "subject")
     interface.submitDatasetTemplate(template_id)
-    
-    dataset2 = interface.addDataset("dataset_name", "long_dataset_name", "description", "publications", template_id)
-    
-    # add dataset record and submit dataset using interface
-    fields = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
-    interface.addDatasetRecord(dataset.d_id, fields)
 
-    interface.submitDataset(dataset, "status")
+    dataset2 = interface.addDataset("dataset_name", "long_dataset_name", "description", "publications", template_id)
+
+    # add dataset record and submit dataset using interface
+    record = {"field_name" : "value", "field_name2" : "value", "field_name3": "value"}
+    interface.addDatasetRecord(dataset.id, record=record)
+
+    interface.submitDataset(dataset, "status change if you have permissions")
 
 
 ```
