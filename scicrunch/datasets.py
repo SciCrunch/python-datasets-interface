@@ -336,7 +336,7 @@ class Interface(ScicrunchSession, Tools):
         return dataset
 
     # TODO: figure out what this post actually returns.
-    def addDatasetRecord(self, dataset: int, fields: dict) -> dict:
+    def addDatasetRecord(self, dataset: int, record: dict) -> dict:
         """ Add row of data to dataset.
 
         Add data to the previously created dataset.
@@ -347,13 +347,15 @@ class Interface(ScicrunchSession, Tools):
 
         >>> interface.addDatasetRecord(
                 dataset = '12345',
-                fields     = {'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'},
+                fields  = {'Gender': 'Female', 'ID': '3', 'Scientist': 'Joe'},
             )
         """
+        if not isinstance(record, dict):
+            ValueError(f'Record should be of type dict, not {type(record)}.')
         dataset_name, dataset_id = self.process_dataset(dataset)
         data = {
             'datasetid': dataset_id,
-            'fields': fields,
+            'fields': record,
         }
         return self.post('datasets/records/add', data=data)
 
