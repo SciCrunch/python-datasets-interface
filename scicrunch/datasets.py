@@ -351,7 +351,7 @@ class Interface(ScicrunchSession, Tools):
             )
         """
         if not isinstance(record, dict):
-            ValueError(f'Record should be of type dict, not {type(record)}.')
+            raise ValueError(f'Record should be of type dict, not {type(record)}.')
         dataset_name, dataset_id = self.process_dataset(dataset)
         data = {
             'datasetid': dataset_id,
